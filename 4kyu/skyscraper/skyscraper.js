@@ -11,6 +11,11 @@ function transposeMatrix(matrix)
 {
     const transposedMatrix = [];
 
+    for (let line = 0; line < matrix.length; line++) 
+    {
+       console.log(line);
+    }
+
     console.log(exampleMatrix);
     console.log(transposedMatrix);
     return;
