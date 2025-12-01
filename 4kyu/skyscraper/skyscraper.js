@@ -1,32 +1,29 @@
 const tableSize = 4
-const exampleMatrix = [[1,2,3,4], [2,3,4,1], [3,4,1,2], [4,1,2,3]]
+const exampleMatrix = [[2,1,4,3], [3,4,1,2], [4,2,3,1], [1,3,2,4]];
 
-function compareTwoMatrixes(matrix1, matrix2)
-{
+function compareTwoMatrixes(matrix1, matrix2) {
     console.log('compared matrixes');
     return;
 }
 
-function transposeMatrix(matrix)
-{
-    const transposedMatrix = [];
+const newArray = [];
 
-    for (let line = 0; line < matrix.length; line++) 
-    {
-       console.log(line);
+function transposeMatrix(matrix) {
+    for (let i = 0; i < matrix.length; i++) {
+        const column = [];
+        for (let j = 0; j < matrix.length; j++) { 
+            column.push(matrix[j][i]);            
+        }
+        newArray.push(column);
     }
-
-    console.log(exampleMatrix);
-    console.log(transposedMatrix);
     return;
 }
+module.exports = transposeMatrix;
 
-function eliminateCandidate(cell, candidate)
-{
+function eliminateCandidate(cell, candidate) {
     console.log('candidates eliminated');
     return;
 }
 
-compareTwoMatrixes();
 transposeMatrix(exampleMatrix);
-eliminateCandidate();
+console.log(newArray);
