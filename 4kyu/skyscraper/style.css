@@ -1,0 +1,25 @@
+:root {
+    --board-size: 0;
+
+    --main-color: #111;
+}
+
+html {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+  font-size: 10px;
+  font-family: sans-serif;
+  color: var(--main-color);
+}
