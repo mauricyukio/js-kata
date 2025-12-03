@@ -1,13 +1,25 @@
 const boardSize = 4;
-const exampleMatrix = [
+const exampleSolvedMatrix = [
     [2,1,4,3], 
     [3,4,1,2], 
     [4,2,3,1], 
     [1,3,2,4]];
 
-// compareTwoMatrices(exampleMatrix, transposedMatrix, boardSize);
+// compareTwoMatrices(exampleSolvedMatrix, transposedMatrix, boardSize);
 
 const initialMatrix = generateInitialMatrix(boardSize);
+console.log(initialMatrix);
+
+initialMatrix[0][0] = 1;
+initialMatrix[1][1] = 2;
+initialMatrix[2][2] = 3;
+initialMatrix[3][3] = 4;
+console.log(initialMatrix);
+
+analyzeCell(0,3);
+
+console.log(initialMatrix);
+
 
 exampleCell = [4, 3, 2, 1];
 
@@ -17,8 +29,18 @@ function generateInitialMatrix(size) {
         candidates.push(i+1);
     }
 
-    const line = new Array(size).fill(candidates);
-    const matrix = new Array(size).fill(line);
+    const line = [];
+    for (let j = 0; j < size; j++) {
+        const newCell = candidates.slice();
+        line.push(newCell);
+    }
+
+    const matrix = [];
+    for (let k = 0; k < size; k++) {
+        const newLine = line.slice();
+        matrix.push(newLine);
+    }
+
     return matrix;
 }
 
@@ -55,15 +77,22 @@ function analyzeCell(xPosition, yPosition) {
     const toEliminate = [];
     
     for (cell of row) {
-        console.log(typeof cell);
         if (typeof cell === "number") {
             toEliminate.push(cell);
+        } else {
+            for (candidate of cell) {
+                const isUnique = checkForUniqueCellForCandidate(candidate, row, indexOf(cell));
+                cell = isUnique ? candidate : cell;
+            }
         }
     }
     for (cell of column) {
-        console.log(typeof cell);
         if (typeof cell === "number") {
             toEliminate.push(cell);
+        } else {
+            for (candidate of cell) {
+                const isUnique = checkForUniqueCellForCandidate(candidate, column, indexOf(cell));
+                cell = isUnique ? candidate : cell;
         }
     }
 
@@ -76,7 +105,7 @@ function scanLine(line) {
     console.log('scanned');
 }
 
-function fillCell(cell) {
+function fillByUniqueCandidateForCell(cell) {
     let answer = null;
     for (value of cell) {
         if (value !== null) {
@@ -90,15 +119,23 @@ function fillCell(cell) {
     return answer;
 }
 
-// console.log(initialMatrix);
-// initialMatrix[0][0] = 1;
-// initialMatrix[1][1] = 2;
-// initialMatrix[2][2] = 3;
-// initialMatrix[3][3] = 4;
+function checkForUniqueCellForCandidate(candidate, line, index) {
+    for (let i = 0; i < boardSize; i++) {
+        if(line[i].includes(candidate) && i !== index) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // console.log(initialMatrix);
 
-// // analyzeCell(0,3);
+// initialMatrix[0][0] = initialMatrix[0][0].reduce((a, b) => a + b, 0);
 
 // console.log(initialMatrix);
 
-eliminateCandidate(initialMatrix)
+// analyzeCell(0,3);
+
+// console.log(initialMatrix);
+
+// eliminateCandidate(initialMatrix)
