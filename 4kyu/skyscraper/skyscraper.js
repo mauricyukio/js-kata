@@ -5,24 +5,33 @@ const exampleSolvedMatrix = [
     [4,2,3,1], 
     [1,3,2,4]];
 
+const initialMatrixTemplate = [
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]],
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]], 
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]],
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]
+]
+
+const initialMatrixForced = [
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]],
+    [[1, 2, 3, 4], 3, [1, 2, 3, 4], 4,],
+    [[1, 2, 3, 4], [1, 4], [1, 2, 3, 4], [3, 4]],
+    [[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]]
+]
+
 // compareTwoMatrices(exampleSolvedMatrix, transposedMatrix, boardSize);
 
 const initialMatrix = generateInitialMatrix(boardSize);
-console.log(initialMatrix);
-
-initialMatrix[0][0] = 1;
-initialMatrix[1][1] = 2;
-initialMatrix[2][2] = 3;
-initialMatrix[3][3] = 4;
-console.log(initialMatrix);
+console.log(initialMatrixForced);
 
 analyzeCell(0,3);
 
-console.log(initialMatrix);
+console.log(initialMatrixForced);
 
 
 exampleCell = [4, 3, 2, 1];
 
+// Creates a matrix based on board size filled with all candidates in every cell
 function generateInitialMatrix(size) {
     let candidates = [];
     for (let i = null; i < size; i++) {
@@ -70,9 +79,13 @@ function eliminateCandidate(cell, candidate) {
 }
 
 function analyzeCell(xPosition, yPosition) {
-    const row = initialMatrix[xPosition];
+    if(typeof fillByUniqueCandidateForCell(initialMatrix[xPosition][yPosition]) === "number") {
+        return;
+    }
 
-    const column = transposeMatrix(initialMatrix, boardSize)[yPosition];
+    const row = initialMatrixForced[xPosition];
+
+    const column = transposeMatrix(initialMatrixForced, boardSize)[yPosition];
 
     const toEliminate = [];
     
@@ -81,7 +94,7 @@ function analyzeCell(xPosition, yPosition) {
             toEliminate.push(cell);
         } else {
             for (candidate of cell) {
-                const isUnique = checkForUniqueCellForCandidate(candidate, row, indexOf(cell));
+                const isUnique = checkForUniqueCellForCandidate(candidate, row, cell.indexOf(candidate));
                 cell = isUnique ? candidate : cell;
             }
         }
@@ -91,8 +104,9 @@ function analyzeCell(xPosition, yPosition) {
             toEliminate.push(cell);
         } else {
             for (candidate of cell) {
-                const isUnique = checkForUniqueCellForCandidate(candidate, column, indexOf(cell));
+                const isUnique = checkForUniqueCellForCandidate(candidate, column, cell.indexOf(candidate));
                 cell = isUnique ? candidate : cell;
+            }
         }
     }
 
@@ -105,8 +119,13 @@ function scanLine(line) {
     console.log('scanned');
 }
 
+// Runs over the array of candidates and checks number of candidates
 function fillByUniqueCandidateForCell(cell) {
+    if (typeof cell === "number") {
+        return;
+    }
     let answer = null;
+    console.log(cell);
     for (value of cell) {
         if (value !== null) {
             if (answer !== null) {
@@ -121,7 +140,7 @@ function fillByUniqueCandidateForCell(cell) {
 
 function checkForUniqueCellForCandidate(candidate, line, index) {
     for (let i = 0; i < boardSize; i++) {
-        if(line[i].includes(candidate) && i !== index) {
+        if(line.includes(candidate) && i !== index) {
             return false;
         }
     }
