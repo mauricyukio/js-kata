@@ -97,7 +97,9 @@ function analyzeCell(board, rowIndex, columnIndex) {
     const row = board[rowIndex];
     const column = transposeMatrix(board, boardSize)[columnIndex];
 
-    return fillByUniqueCandidateForCell(board[rowIndex][columnIndex].filter((candidate) => !row.includes(candidate)).filter((candidate) => !column.includes(candidate)));
+    return fillByUniqueCandidateForCell(board[rowIndex][columnIndex]
+        .filter((candidate) => !row.includes(candidate))
+        .filter((candidate) => !column.includes(candidate)));
 }
 
 // Runs over the array of candidates and checks number of candidates
