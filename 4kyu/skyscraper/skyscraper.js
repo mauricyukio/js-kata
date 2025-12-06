@@ -40,6 +40,18 @@ const clues2 = [
     0, 3, 0, 0,
     0, 1, 0, 0];
 
+class Cell {
+    constructor(row, column, candidates) {
+        this.row = row;
+        this.column = column;
+        this.candidates = candidates;
+    }
+
+    get isFilled() {
+        return typeof this.candidates === 'number';
+    }
+}
+
 solvePuzzle(clues);
 
 function solvePuzzle(clues) {
@@ -49,8 +61,9 @@ function solvePuzzle(clues) {
     const allLines = normalizeBoard(board, transposedBoard);
 
     console.log('starting analysis');
-    analyzeClues(allLines, clues);
-    analyzeBoard(board, transposedBoard, boardSize); 
+    board = updateBoardCandidates(analyzeClues(allLines, clues));
+    console.log(board);
+    // analyzeBoard(board, transposedBoard, boardSize); 
 
     // do {
     //     analyzeClues(allLines, clues);
@@ -60,7 +73,7 @@ function solvePuzzle(clues) {
 
 function isSolved(board) {
     for (let cell of board) {
-        if (typeof cell === 'object') {
+        if (!cell.isFilled) {
             return false;
         }
     }
@@ -69,21 +82,15 @@ function isSolved(board) {
 }
 
 function normalizeBoard(board, transposedBoard) {
-    const boardCopy = JSON.parse(JSON.stringify(board));
-    const boardSecondCopy = JSON.parse(JSON.stringify(board));
-    const transposedBoardCopy = JSON.parse(JSON.stringify(transposedBoard));
-    const transposedBoardSecondCopy = JSON.parse(JSON.stringify(transposedBoard));
-
-    const topClues = transposedBoardSecondCopy;
-    const rightClues = boardCopy.map((row) => row.reverse());
-    const bottomClues = transposedBoardCopy.map((column) => column.reverse()).reverse();
-    const leftClues = boardSecondCopy.reverse();
+    const topClues = JSON.parse(JSON.stringify(transposedBoard));
+    const rightClues = JSON.parse(JSON.stringify(board)).map((row) => row.reverse());
+    const bottomClues = JSON.parse(JSON.stringify(transposedBoard)).map((column) => column.reverse()).reverse();
+    const leftClues = JSON.parse(JSON.stringify(board)).reverse();
 
     return topClues.concat(rightClues, bottomClues, leftClues);
 }
 
 function analyzeClues (lines, clues) {
-    console.log(JSON.parse(JSON.stringify(lines)))
     const size = Math.sqrt(clues.length);
     for (let i = 0; i < clues.length; i++) {
         const currentClue = clues[i];
@@ -91,26 +98,70 @@ function analyzeClues (lines, clues) {
 
         switch (currentClue) {
             case 0:
-                console.log('case 0');
+                // console.log('case 0');
                 break;
             case 1:
-                console.log('case 1'); 
-                currentLine[0] = size;
+                // console.log('case 1'); 
+                currentLine[0].candidates = size;
                 break;
             case size:
-                console.log('case size');
+                // console.log('case size');
                 for (let j = 0; j < size; j++) {
-                    currentLine[j] = j + 1;
+                    currentLine[j].candidates = j + 1;
                 }
                 break;
             default:
-                console.log('default');
+                // console.log('default');
                 for (let j = 0; j < currentClue - 1; j++) {
-                    eliminateCandidate(currentLine[j], size);
+                    eliminateCandidate(currentLine[j].candidates, size);
                 }
                 break;
         }
     }
+    
+    return reorganizeAndCollapse(lines);
+}
+
+function updateBoardCandidates(candidatesMatrix, board) {
+    const size = Math.sqrt(candidatesMatrix.length);
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+        for (let columnIndex = 0; columnIndex < size; columnIndex++) {
+            board[rowIndex][columnIndex].candidates = candidatesMatrix[rowIndex][columnIndex];
+        }
+    }
+    return;
+}
+
+function reorganizeAndCollapse(lines) {
+    const size = Math.sqrt(lines.length);
+    const candidatesMatrix = [];
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+        const newRow = [];
+        for (let columnIndex = 0; columnIndex < size; columnIndex++) {
+            let newSuperCell = [];
+            for (let line of lines) {
+                for (let cell of line) {
+                    if (cell.row === rowIndex && cell.column === columnIndex) {
+                        newSuperCell.push(cell);
+                    }
+                }
+            }
+
+            const finalCandidates = [...Array(size).keys()].map((x) => x + 1);
+
+            newSuperCell = newSuperCell.map((cell) => cell.candidates);
+
+            if (newSuperCell.some((candidate) => typeof candidate === 'number')) {
+                newSuperCell = newSuperCell.filter((arrayOfCandidates) => typeof arrayOfCandidates === 'number').pop();
+            } else {
+                newSuperCell = finalCandidates.filter((candidate) => newSuperCell.every((arrayOfCandidates) => arrayOfCandidates.includes(candidate)));
+            }
+
+            newRow.push(newSuperCell);
+        }
+        candidatesMatrix.push(newRow);
+    }
+    return candidatesMatrix;
 }
 
 function analyzeBoard(board, transposedBoard, boardSize) {
@@ -122,7 +173,7 @@ function analyzeBoard(board, transposedBoard, boardSize) {
             console.log('Type of current cell: ' + typeof cell);
             console.log(cell);
 
-            if (typeof cell === 'number') {
+            if (cell.isFilled) {
                 console.log('Skipped because already filled');
                 continue;
             }
@@ -134,25 +185,23 @@ function analyzeBoard(board, transposedBoard, boardSize) {
 
 // Creates a matrix based on board size filled with all possible candidates in every cell
 function generateInitialBoard(size) {
+    const newBoard = [];
+    
+    const candidates = [...Array(size).keys()].map((x) => x + 1);
+    
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+        const newRow = [];
+
+        for (let columnIndex = 0; columnIndex < size; columnIndex++) {
+            const newCell = new Cell(rowIndex, columnIndex, candidates.slice());
+            newRow.push(newCell);
+        }
+
+        newBoard.push(newRow);
+    }
+
     console.log('Board generated. Size = ' + size);
-    let candidates = [];
-    for (let i = 0; i < size; i++) {
-        candidates.push(i+1);
-    }
-
-    const line = [];
-    for (let j = 0; j < size; j++) {
-        const newCell = candidates.slice();
-        line.push(newCell);
-    }
-
-    const matrix = [];
-    for (let k = 0; k < size; k++) {
-        const newLine = line.slice();
-        matrix.push(newLine);
-    }
-
-    return matrix;
+    return newBoard;
 }
 
 function compareTwoMatrices(matrix1, matrix2, size) {
@@ -176,25 +225,25 @@ function transposeMatrix(matrix) {
     return transposedArray;
 }
 
-function eliminateCandidate(cell, candidate) {
-    cell.splice(cell.indexOf(candidate));
+function eliminateCandidate(arrayOfCandidates, candidate) {
+    arrayOfCandidates.splice(arrayOfCandidates.indexOf(candidate), 1);
 }
 
 function analyzeCell(board, transposedBoard, rowIndex, columnIndex) {
     const row = board[rowIndex];
     const column = transposedBoard[columnIndex];
 
-    return fillByUniqueCandidateForCell(board[rowIndex][columnIndex]
+    return fillByUniqueCandidateForCell(board[rowIndex][columnIndex].candidates
         .filter((candidate) => !row.includes(candidate))
         .filter((candidate) => !column.includes(candidate)));
 }
 
 // Runs over the array of candidates and checks number of candidates
-function fillByUniqueCandidateForCell(cell) {
-    if (cell.length === 1) {
+function fillByUniqueCandidateForCell(arrayOfCandidates) {
+    if (arrayOfCandidates.length === 1) {
         console.log('Filled current cell (It was the only candidate)');
-        return cell.pop();  
+        return arrayOfCandidates.pop();  
     } else {
-        return cell;
+        return arrayOfCandidates;
     }
 }
